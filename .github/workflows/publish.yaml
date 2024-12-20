@@ -37,9 +37,7 @@ jobs:
 
       - name: Push Docker Image
         uses: docker/build-push-action@v6
-        platforms:
-          - linux/amd64
-          - linux/arm64
         with:
+          platforms: linux/amd64,linux/arm64
           push: true
           tags: yunling101/prometheus-config-reloader:${{steps.generate_tag.outputs.version}}
