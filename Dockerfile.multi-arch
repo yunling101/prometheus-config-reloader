@@ -1,3 +1,5 @@
+ARG ARCH=amd64
+ARG OS=linux
 ARG GOLANG_BUILDER="1.23-alpine"
 
 FROM golang:${GOLANG_BUILDER} AS go_builder
@@ -13,7 +15,10 @@ RUN --mount=type=cache,target=/go/pkg/mod --mount=type=cache,target=/root/.cache
 RUN apk add make git
 RUN --mount=type=cache,target=/go/pkg/mod --mount=type=cache,target=/root/.cache/go-build make prometheus-config-reloader
 
-FROM busybox:latest
+ARG GOARCH
+ENV GOARCH=${GOARCH}
+
+FROM quay.io/prometheus/busybox-${OS}-${ARCH}:latest
 
 COPY --from=go_builder workspace/prometheus-config-reloader /bin/prometheus-config-reloader
 USER nobody

@@ -2,9 +2,16 @@ SHELL=/usr/bin/env sh -o pipefail
 
 GOOS?=$(shell go env GOOS)
 GOARCH?=$(shell go env GOARCH)
+
+ifeq ($(GOARCH),arm)
+	ARCH=armv7
+else
+	ARCH=$(GOARCH)
+endif
+
 TAG?=$(shell git rev-parse --short HEAD)
-BUILD_DATE=$(shell date +"%Y%m%d-%T")
 VERSION?=$(shell cat version.md | tr -d " \t\n\r")
+BUILD_DATE=$(shell date +"%Y%m%d-%T")
 
 PROJECT_PKG=github.com/yunling101/prometheus-config-reloader
 
@@ -30,3 +37,12 @@ prometheus-config-reloader-image:
 		--build-arg GOARCH=$(GOARCH) \
 		--build-arg OS=$(GOOS) \
 		-t yunling101/prometheus-config-reloader:$(VERSION) -f Dockerfile .
+
+.PHONY: multi-arch
+multi-arch: GOOS := linux
+multi-arch:
+	@docker build \
+		--build-arg ARCH=$(ARCH) \
+		--build-arg GOARCH=$(GOARCH) \
+		--build-arg OS=$(GOOS) \
+		-t yunling101/prometheus-config-reloader:$(VERSION) -f Dockerfile.multi-arch .
